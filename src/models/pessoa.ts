@@ -5,6 +5,6 @@ export interface Pessoa {
     idade?: number;
     login?: string;
     senha?: string;
-    status?: string;
+    status?: number;
   }
   
