@@ -1,4 +1,7 @@
 import oracledb, { Connection } from 'oracledb';
+oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+// oracledb.autoCommit = true;
+
 export default class DatabaseConnection {
     private oracledb = oracledb;
     private dbConfig = {

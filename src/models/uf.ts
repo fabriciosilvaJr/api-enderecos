@@ -1,7 +1,9 @@
-export interface Uf {
-    codigo_uf?: number;
-    sigla?: string;
-    nome?: string;
-    status?: number;
+ interface Uf {
+    CODIGO_UF?: number;
+    SIGLA?: string;
+    NOME?: string;
+    STATUS?: number;
   }
   
+
+  export default Uf;

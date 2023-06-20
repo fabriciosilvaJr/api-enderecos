@@ -1,9 +1,10 @@
+
 import {Router} from 'express';
+import ufRotas from './UfRota'
 
 const rotas = Router();
+rotas.use('/uf', ufRotas);
 
-rotas.get('/', (request, response) =>{
-    return response.json({messagem: 'Olá Dev!' });
-})
+
 
 export default rotas;
