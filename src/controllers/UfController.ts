@@ -33,8 +33,22 @@ class UfController{
 
         try{
 
-          const query = `INSERT INTO tb_uf (codigo_uf, sigla, nome, status) Values (:codigo_uf, :sigla, :nome, :status)` ;
-           await dbConexao.conexaoComBanco().then(async (connection: any) => {
+    
+        await dbConexao.conexaoComBanco().then(async (connection: any) => {
+              //validações
+           
+              const resultSigla = await connection.execute(`select * from tb_uf WHERE SIGLA= :SILGA`,[req.body.sigla]);
+              if(resultSigla.rows.length > 0){
+                return res.status(404).send({mensagem:'Não foi possível incluir uf no banco, pois já existe uma uf com essa mesma sigla', status: 404})
+               }
+
+            const resultNome = await connection.execute(`select * from tb_uf WHERE NOME= :NOME`,[req.body.nome]);
+              if(resultNome.rows.length > 0){
+                return res.status(404).send({mensagem:'Não foi possível incluir uf no banco, pois já existe uma uf com esse mesmo nome', status: 404})
+               }
+             
+
+                const query = `INSERT INTO tb_uf (codigo_uf, sigla, nome, status) Values (:codigo_uf, :sigla, :nome, :status)` ;
                 const result = await connection.execute(query, [
                     req.body.codigo_uf,
                     req.body.sigla,
