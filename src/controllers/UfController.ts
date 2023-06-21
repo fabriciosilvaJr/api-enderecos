@@ -91,7 +91,13 @@ class UfController {
 
                 return res.status(200).send(response.ufs);
             } catch (error) {
-                return res.status(500).send({ error: error });
+                return res
+                    .status(404)
+                    .send({
+                        mensagem:
+                            "Não foi possível incluir UF no banco de dados.",
+                        status: 404,
+                    });
             } finally {
                 await dbConexao.liberar(connection);
             }
@@ -106,8 +112,11 @@ class UfController {
                     `select * from tb_uf WHERE SIGLA = :SIGLA`,
                     [req.body.sigla]
                 );
-                
-                if ((resultSigla.rows.length > 0) && (resultSigla.rows[0].CODIGO_UF != req.body.codigoUF)) {
+
+                if (
+                    resultSigla.rows.length > 0 &&
+                    resultSigla.rows[0].CODIGO_UF != req.body.codigoUF
+                ) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível alterar uf no banco, pois já existe uma uf com essa mesma sigla",
@@ -120,7 +129,10 @@ class UfController {
                     [req.body.nome]
                 );
 
-                if ((resultNome.rows.length > 0) && (resultNome.rows[0].CODIGO_UF != req.body.codigoUF)) {
+                if (
+                    resultNome.rows.length > 0 &&
+                    resultNome.rows[0].CODIGO_UF != req.body.codigoUF
+                ) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível alterar uf no banco, pois já existe uma uf com esse mesmo nome",
@@ -168,12 +180,16 @@ class UfController {
                         nomeDoCampo: "sigla",
                     });
                 }
-      
 
                 const query = `UPDATE tb_uf set sigla = :sigla, nome= :nome, status= :status WHERE codigo_uf = :codigoUf `;
                 const result = await connection.execute(
                     query,
-                    [req.body.sigla, req.body.nome, req.body.status,req.body.codigoUF],
+                    [
+                        req.body.sigla,
+                        req.body.nome,
+                        req.body.status,
+                        req.body.codigoUF,
+                    ],
                     { autoCommit: true }
                 );
 
@@ -193,14 +209,18 @@ class UfController {
 
                 return res.status(200).send(response.ufs);
             } catch (error) {
-                return res.status(500).send({ error: error });
+                return res
+                    .status(404)
+                    .send({
+                        mensagem:
+                            "Não foi possível alterar UF no banco de dados.",
+                        status: 404,
+                    });
             } finally {
                 await dbConexao.liberar(connection);
             }
         });
     };
-
-
 
     public listarUF = async (req: Request, res: Response) => {
         dbConexao.conexaoComBanco().then(async (connection: any) => {
@@ -252,7 +272,9 @@ class UfController {
                     return res.status(200).send(response.ufs);
                 }
 
-                const result = await connection.execute("SELECT * FROM tb_uf order by codigo_uf DESC");
+                const result = await connection.execute(
+                    "SELECT * FROM tb_uf order by codigo_uf DESC"
+                );
                 const response = {
                     ufs: result.rows.map((uf: Uf) => {
                         return {
@@ -266,7 +288,11 @@ class UfController {
 
                 return res.status(200).send(response.ufs);
             } catch (error) {
-                return res.status(500).send({ error: error });
+                return res.status(404).send({
+                    mensagem:
+                        "Não foi possível consultar UF no banco de dados.",
+                    status: 404,
+                });
             } finally {
                 await dbConexao.liberar(connection);
             }

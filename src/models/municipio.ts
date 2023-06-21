@@ -1,7 +1,9 @@
 export interface Municipio {
-    codigo_municipio?: number;
-    codigo_uf?: number;
-    nome?: string;
-    status?: number;
+    CODIGO_MUNICIPIO?: number;
+    CODIGO_UF?: number;
+    NOME?: string;
+    STATUS?: number;
   }
+
+  export default Municipio
   
