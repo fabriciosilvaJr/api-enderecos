@@ -2,13 +2,9 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import rotas from './routes'
 import AppErro from './errors/AppErro';
-import db from './database';
-import { Result } from 'oracledb';
 
 
-// const dbConexao = new db;
 
-//dbConexao.conexaoComBanco();
 
 const app = express();
 
@@ -37,18 +33,3 @@ app.listen(3333,()=>{
     console.log('Servidor rodando na porta 3333!');
 });
 
-//  async function conectarDB() {
-//      dbConexao.conexaoComBanco().then(async (connection: any) => {
-//         await connection.execute("SELECT * FROM tb_uf", [], (err: Error, result: Result<[]>) => {
-//             if (err) {
-//                 console.error(err.message);
-//             }
-//             console.log(result.rows);
-//         });
-//         dbConexao.liberar(connection);
-//     }).catch(error => {
-//         console.log(error);
-//     });
-// }
-
-// conectarDB()
