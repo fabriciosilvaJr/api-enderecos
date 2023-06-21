@@ -6,7 +6,7 @@ import db from './database';
 import { Result } from 'oracledb';
 
 
-const dbConexao = new db;
+// const dbConexao = new db;
 
 //dbConexao.conexaoComBanco();
 
