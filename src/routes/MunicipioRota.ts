@@ -6,6 +6,7 @@ const municipioRotas = Router();
 const municipioController = new MunicipioController();
 
 municipioRotas.post('/', municipioController.criacaoMunicipio);
+municipioRotas.get('/', municipioController.listarMunicipio);
 
 
 export default municipioRotas;
