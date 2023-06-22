@@ -61,18 +61,17 @@ class BairroController {
                 }
 
                 const query = `INSERT INTO tb_bairro (codigo_bairro,codigo_municipio, nome, status) Values (SEQUENCE_BAIRRO.nextval, :codigoMunicipio, :nome, :status)`;
-                const result = await connection.execute(
+                await connection.execute(
                     query,
                     [req.body.codigoMunicipio, req.body.nome, req.body.status],
                     { autoCommit: true }
                 );
-                console.log(result);
 
-                const result2 = await connection.execute(
+                const result = await connection.execute(
                     "SELECT * FROM tb_bairro order by codigo_bairro DESC"
                 );
                 const response = {
-                    bairros: result2.rows.map((bairro: Bairro) => {
+                    bairros: result.rows.map((bairro: Bairro) => {
                         return {
                             codigoBairro: bairro.CODIGO_BAIRRO,
                             codigoMunicipio: bairro.CODIGO_MUNICIPIO,
@@ -88,6 +87,93 @@ class BairroController {
                 return res.status(404).send({
                     mensagem:
                         "Não foi possível cadastrar bairro no banco de dados.",
+                    status: 404,
+                });
+            } finally {
+                await dbConexao.liberar(connection);
+            }
+        });
+    };
+
+    public listarBairro = async (req: Request, res: Response) => {
+        dbConexao.conexaoComBanco().then(async (connection: any) => {
+            try {
+                function ehNumero(valor: any) {
+                    return /^[0-9]+$/.test(valor);
+                }
+
+                //validação
+                if (
+                    req.query.codigoBairro &&
+                    !ehNumero(req.query.codigoBairro)
+                ) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível consultar Bairro no banco de dados, pois o valor do campo codigoBairro precisa ser um número",
+                        status: 404,
+                    });
+                }
+
+                if (
+                    req.query.codigoMunicipio &&
+                    !ehNumero(req.query.codigoMunicipio)
+                ) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível consultar Bairro no banco de dados, pois o valor do campo codigoMunicipio precisa ser um número",
+                        status: 404,
+                    });
+                }
+
+
+                if (
+                    req.query.codigoMunicipio ||
+                    req.query.codigoBairro ||
+                    req.query.nome ||
+                    req.query.status
+                ) {
+                    let filtro = await connection.execute(
+                        `SELECT * FROM tb_bairro WHERE codigo_bairro= :codigoBairro or codigo_municipio = :codigoMunicipio  or nome LIKE :nome collate binary_ci or status LIKE :status `,
+                        [
+                            req.query.codigoBairro,
+                            req.query.codigoMunicipio,
+                            "%"+req.query.nome+"%",
+                            req.query.status,
+                        ]
+                    );
+                    const response = {
+                        bairros: filtro.rows.map((bairro: Bairro) => {
+                            return {
+                                codigoBairro: bairro.CODIGO_BAIRRO,
+                                codigoMunicipio: bairro.CODIGO_MUNICIPIO,
+                                nome: bairro.NOME,
+                                status: bairro.STATUS,
+                            };
+                        }),
+                    };
+
+                    return res.status(200).send(response.bairros);
+                }
+
+                const result = await connection.execute(
+                    "SELECT * FROM tb_bairro order by codigo_bairro DESC"
+                );
+                const response = {
+                    bairros: result.rows.map((bairro: Bairro) => {
+                        return {
+                            codigoBairro: bairro.CODIGO_BAIRRO,
+                            codigoMunicipio: bairro.CODIGO_MUNICIPIO,
+                            nome: bairro.NOME,
+                            status: bairro.STATUS,
+                        };
+                    }),
+                };
+
+                return res.status(200).send(response.bairros);
+            } catch (error) {
+                return res.status(404).send({
+                    mensagem:
+                        "Não foi possível consultar bairro no banco de dados.",
                     status: 404,
                 });
             } finally {

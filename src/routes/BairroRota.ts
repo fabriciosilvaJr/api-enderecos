@@ -6,6 +6,7 @@ const bairroRotas = Router();
 const bairroController = new BairroController();
 
 bairroRotas.post('/', bairroController.criacaoBairro);
+bairroRotas.get('/', bairroController.listarBairro);
 
 
 
