@@ -7,7 +7,7 @@ const bairroController = new BairroController();
 
 bairroRotas.post('/', bairroController.criacaoBairro);
 bairroRotas.get('/', bairroController.listarBairro);
-
+bairroRotas.put('/', bairroController.alterarBairro);
 
 
 export default bairroRotas;
