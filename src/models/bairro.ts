@@ -1,7 +1,8 @@
 export interface Bairro {
-    codigo_bairro?: number;
-    codigo_municipio?: number;
-    nome?: string;
-    status?: number;
+    CODIGO_BAIRRO?: number;
+    CODIGO_MUNICIPIO?: number;
+    NOME?: string;
+    STATUS?: number;
   }
   
+  export default Bairro;

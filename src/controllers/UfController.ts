@@ -35,7 +35,7 @@ class UfController {
                     });
                 }
 
-                if (req.body.sigla == null) {
+                if ((req.body.sigla == null) || (req.body.sigla =="")) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível incluir uf no banco, pois o campo sigla é obrigatório",
@@ -43,7 +43,7 @@ class UfController {
                         nomeDoCampo: "sigla",
                     });
                 }
-                if (req.body.nome == null) {
+                if ((req.body.nome == null) || (req.body.nome == "")) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível incluir uf no banco, pois o campo nome é obrigatório",
@@ -91,13 +91,10 @@ class UfController {
 
                 return res.status(200).send(response.ufs);
             } catch (error) {
-                return res
-                    .status(404)
-                    .send({
-                        mensagem:
-                            "Não foi possível incluir UF no banco de dados.",
-                        status: 404,
-                    });
+                return res.status(404).send({
+                    mensagem: "Não foi possível incluir UF no banco de dados.",
+                    status: 404,
+                });
             } finally {
                 await dbConexao.liberar(connection);
             }
@@ -148,7 +145,7 @@ class UfController {
                     });
                 }
 
-                if (req.body.sigla == null) {
+                if ((req.body.sigla == null) || (req.body.sigla =="")) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível alterar uf no banco, pois o campo sigla é obrigatório",
@@ -156,7 +153,7 @@ class UfController {
                         nomeDoCampo: "sigla",
                     });
                 }
-                if (req.body.nome == null) {
+                if ((req.body.nome == null) || (req.body.nome == "")) {
                     return res.status(404).send({
                         mensagem:
                             "Não foi possível alterar uf no banco, pois o campo nome é obrigatório",
@@ -209,13 +206,10 @@ class UfController {
 
                 return res.status(200).send(response.ufs);
             } catch (error) {
-                return res
-                    .status(404)
-                    .send({
-                        mensagem:
-                            "Não foi possível alterar UF no banco de dados.",
-                        status: 404,
-                    });
+                return res.status(404).send({
+                    mensagem: "Não foi possível alterar UF no banco de dados.",
+                    status: 404,
+                });
             } finally {
                 await dbConexao.liberar(connection);
             }
@@ -250,11 +244,11 @@ class UfController {
                     req.query.status
                 ) {
                     let filtro = await connection.execute(
-                        `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF or  sigla LIKE :sigla  or nome LIKE :nome or status LIKE :status `,
+                        `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF or  sigla LIKE :sigla collate binary_ci  or nome LIKE :nome collate binary_ci or status LIKE :status   `,
                         [
                             req.query.codigoUF,
                             req.query.sigla,
-                            req.query.nome,
+                            "%"+req.query.nome+"%",
                             req.query.status,
                         ]
                     );

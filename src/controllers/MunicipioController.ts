@@ -9,6 +9,31 @@ class MunicipioController {
         await dbConexao.conexaoComBanco().then(async (connection: any) => {
             try {
                 //validações
+                if (req.body.codigoUF == null) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível incluir municipio no banco, pois o campo codigoUF é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "codigoUF",
+                    });
+                }
+                if ((req.body.nome == null) || (req.body.nome == "")) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível incluir municipio no banco, pois o campo nome é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "nome",
+                    });
+                }
+                if (req.body.status == null) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível incluir municipio no banco, pois o campo status é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "status",
+                    });
+                }
+
                 const resultUF = await connection.execute(
                     `select * from tb_uf WHERE codigo_uf = :codigoUF`,
                     [req.body.codigoUF]
@@ -71,11 +96,86 @@ class MunicipioController {
         });
     };
 
+    public alterarMunicipio = async (req: Request, res: Response) => {
+        await dbConexao.conexaoComBanco().then(async (connection: any) => {
+            try {
+                //validações
+                if (req.body.codigoMunicipio == null) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível alterar municipio no banco, pois o campo codigoMunicipio é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "codigoMunicipio",
+                    });
+                }
+                if ((req.body.nome == null) || (req.body.nome == "")) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível alterar municipio no banco, pois o campo nome é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "nome",
+                    });
+                }
+                if (req.body.codigoUF == null) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível alterar municipio no banco, pois o campo codigoUF é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "codigoUF",
+                    });
+                }
+                if (req.body.status == null) {
+                    return res.status(404).send({
+                        mensagem:
+                            "Não foi possível alterar municipio no banco, pois o campo status é obrigatório",
+                        status: 404,
+                        nomeDoCampo: "status",
+                    });
+                }
+               
+
+                const query = `UPDATE tb_municipio set codigo_uf = :codigoUF, nome= :nome, status= :status WHERE codigo_municipio = :codigoMunicipio `;
+                const result = await connection.execute(
+                    query,
+                    [
+                        req.body.codigoUF,
+                        req.body.nome,
+                        req.body.status,
+                        req.body.codigoMunicipio,
+                    ],
+                    { autoCommit: true }
+                );
+
+                const result2 = await connection.execute(
+                    "SELECT * FROM tb_municipio order by codigo_municipio DESC"
+                );
+                const response = {
+                    municipios: result2.rows.map((municipio: Municipio) => {
+                        return {
+                            codigoMunicipio: municipio.CODIGO_MUNICIPIO,
+                            codigoUF: municipio.CODIGO_UF,
+                            nome: municipio.NOME,
+                            status: municipio.STATUS,
+                        };
+                    }),
+                };
+
+                return res.status(200).send(response.municipios);
+            } catch (error) {
+                return res.status(404).send({
+                    mensagem: "Não foi possível alterar municipio no banco de dados.",
+                    status: 404,
+                });
+            } finally {
+                await dbConexao.liberar(connection);
+            }
+        });
+    };
+
+
     public listarMunicipio = async (req: Request, res: Response) => {
         dbConexao.conexaoComBanco().then(async (connection: any) => {
             try {
-                const valor = parseInt(req.query.codigoMunicipio as string);
-
                 function ehNumero(valor: any) {
                     return /^[0-9]+$/.test(valor);
                 }
@@ -99,11 +199,11 @@ class MunicipioController {
                     req.query.status
                 ) {
                     let filtro = await connection.execute(
-                        `SELECT * FROM tb_municipio WHERE codigo_municipio= :codigoMunicipio or codigo_uf LIKE :codigoUF  or nome LIKE :nome or status LIKE :status `,
+                        `SELECT * FROM tb_municipio WHERE codigo_municipio= :codigoMunicipio or codigo_uf = :codigoUF  or nome LIKE :nome collate binary_ci or status LIKE :status `,
                         [
                             req.query.codigoMunicipio,
                             req.query.codigoUF,
-                            req.query.nome,
+                            "%"+req.query.nome+"%",
                             req.query.status,
                         ]
                     );
