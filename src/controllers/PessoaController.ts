@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Pessoa from "./../models/pessoa";
 import db from "./../database";
+import { error } from "console";
 
 const dbConexao = new db();
 
@@ -8,19 +9,22 @@ class PessoaController {
     public criacaoPessoa = async (req: Request, res: Response) => {
         await dbConexao.conexaoComBanco().then(async (connection: any) => {
             try {
+                const {
+                    nome,
+                    sobrenome,
+                    idade,
+                    login,
+                    senha,
+                    status,
+                    enderecos,
+                } = req.body;
+
                 const queryPessoa = `INSERT INTO tb_pessoa (codigo_pessoa,nome,sobrenome, idade, login, senha, status)
                  Values (SEQUENCE_PESSOA.nextval, :nome, :sobrenome, :idade, :login, :senha, :status) `;
 
                 const result = await connection.execute(
                     queryPessoa,
-                    [
-                        req.body.nome,
-                        req.body.sobrenome,
-                        req.body.idade,
-                        req.body.login,
-                        req.body.senha,
-                        req.body.status,
-                    ],
+                    [nome, sobrenome, idade, login, senha, status],
                     { autoCommit: true }
                 );
 
@@ -29,7 +33,7 @@ class PessoaController {
                         "select max(codigo_pessoa) as max from tb_pessoa"
                     );
                     //console.log(codigoPessoa.rows[0].MAX)
-                    const contador = req.body.enderecos.length;
+                    const contador = enderecos.length;
 
                     const queryEndereco = `INSERT INTO tb_endereco (codigo_endereco, codigo_pessoa, codigo_bairro, nome_rua, numero, complemento, cep) 
                         Values (SEQUENCE_ENDERECO.nextval, :codigoPessoa , :codigoBairro, :nomeRua, :numero, :complemento, :cep)
@@ -37,20 +41,18 @@ class PessoaController {
                     for (let i = 0; i < contador; i++) {
                         await connection.execute(
                             queryEndereco,
-                            [   
+                            [
                                 codigoPessoa.rows[0].MAX,
-                                req.body.enderecos[i].codigoBairro,
-                                req.body.enderecos[i].nomeRua,
-                                req.body.enderecos[i].numero,
-                                req.body.enderecos[i].complemento,
-                                req.body.enderecos[i].cep,
+                                enderecos[i].codigoBairro,
+                                enderecos[i].nomeRua,
+                                enderecos[i].numero,
+                                enderecos[i].complemento,
+                                enderecos[i].cep,
                             ],
                             { autoCommit: true }
                         );
                     }
                 }
-
-              
 
                 const results = await connection.execute(
                     "SELECT * FROM tb_pessoa order by codigo_pessoa DESC"

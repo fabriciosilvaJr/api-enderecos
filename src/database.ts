@@ -15,7 +15,7 @@ export default class DatabaseConnection {
 
     public async conexaoComBanco() {
         return new Promise((resolve, reject) => {
-            this.oracledb.getConnection(this.dbConfig, (err, connection) => {
+            this.oracledb.getConnection(this.dbConfig, (err:oracledb.DBError, connection:Connection) => {
                 if (err) {
                     reject(err.message);
                 }
