@@ -12,6 +12,16 @@ export interface Pessoa {
     NUMERO?: string;
     COMPLEMENTO?: string;
     CEP?: string;
+    CODIGO_MUNICIPIO?: number;
+    NOME_BAIRRO?: string;
+    STATUS_BAIRRO: string;
+    CODIGO_UF: number;
+    NOME_MUNICIPIO: string;
+    STATUS_MUNICIPIO: string;
+    SIGLA: string
+    NOME_UF: string;
+    STATUS_UF: string;
+  
 }
 
 export default Pessoa;

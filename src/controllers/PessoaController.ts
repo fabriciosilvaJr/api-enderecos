@@ -1,3 +1,4 @@
+import { Bairro } from "./../models/bairro";
 import { Request, Response } from "express";
 import Pessoa from "./../models/pessoa";
 import db from "./../database";
@@ -80,6 +81,124 @@ class PessoaController {
                 return res.status(404).send({
                     mensagem:
                         "Não foi possível cadastrar pessoa no banco de dados.",
+                    status: 404,
+                });
+            } finally {
+                await dbConexao.liberar(connection);
+            }
+        });
+    };
+
+    public listarPessoa = async (req: Request, res: Response) => {
+        dbConexao.conexaoComBanco().then(async (connection: any) => {
+            try {
+                // function ehNumero(valor: any) {
+                //     return /^[0-9]+$/.test(valor);
+                // }
+
+                if (req.query.codigoPessoa) {
+                    let filtro = await connection.execute(
+                        `SELECT p.codigo_pessoa,
+                        p.nome,
+                        p.sobrenome,
+                        p.idade,
+                        p.login,
+                        p.senha,
+                        p.status,
+                        e.codigo_endereco,
+                        e.codigo_bairro,
+                        e.nome_rua,
+                        e.numero,
+                        e.complemento,
+                        e.cep,
+                        b.codigo_municipio,
+                        b.nome AS nome_bairro,
+                        b.status AS status_bairro,
+                        m.codigo_uf,
+                        m.nome AS nome_municipio,
+                        m.status AS status_municipio,
+                        uf.sigla,
+                        uf.nome AS nome_uf,
+                        uf.status AS status_uf
+                 FROM tb_pessoa p
+                 INNER JOIN tb_endereco e ON e.codigo_pessoa = p.codigo_pessoa
+                 INNER JOIN tb_bairro b ON b.codigo_bairro = e.codigo_bairro
+                 INNER JOIN tb_municipio m ON m.codigo_municipio = b.codigo_municipio
+                 INNER JOIN tb_uf uf ON uf.codigo_uf = m.codigo_uf
+                 WHERE p.codigo_pessoa= :codigoPessoa
+                        
+                         `,
+                        [req.query.codigoPessoa]
+                    );
+                 
+                    const response = {
+                        codigoPessoa: filtro.rows[0].CODIGO_PESSOA,
+                        nome: filtro.rows[0].NOME,
+                        sobrenome: filtro.rows[0].SOBRENOME,
+                        idade: filtro.rows[0].IDADE,
+                        login: filtro.rows[0].LOGIN,
+                        senha: filtro.rows[0].SENHA,
+                        status: filtro.rows[0].STATUS,
+                        enderecos: filtro.rows.map((pessoa: Pessoa) => {
+                            return {
+                                codigoEndereco: pessoa.CODIGO_ENDERECO,
+                                codigoPessoa: pessoa.CODIGO_PESSOA,
+                                codigoBairro: pessoa.CODIGO_BAIRRO,
+                                nomeRua: pessoa.NOME_RUA,
+                                numero: pessoa.NUMERO,
+                                complemento: pessoa.COMPLEMENTO,
+                                cep: pessoa.CEP,
+                                bairro: {
+                                    codigoBairro: pessoa.CODIGO_BAIRRO,
+                                    codigoMunicipio: pessoa.CODIGO_MUNICIPIO,
+                                    nome: pessoa.NOME_BAIRRO,
+                                    status: pessoa.STATUS_BAIRRO,
+                                    municipio: {
+                                        codigoMunicipio:
+                                            pessoa.CODIGO_MUNICIPIO,
+                                        codigoUF: pessoa.CODIGO_UF,
+                                        nome: pessoa.NOME_MUNICIPIO,
+                                        status: pessoa.STATUS_MUNICIPIO,
+                                        uf: {
+                                            codigoUF: pessoa.CODIGO_UF,
+                                            sigla: pessoa.SIGLA,
+                                            nome: pessoa.NOME_UF,
+                                            status: pessoa.STATUS_UF,
+                                        },
+                                    },
+                                },
+                            };
+                        }),
+                    };
+
+                    return res.status(200).send(response);
+                }
+
+        
+                const result = await connection.execute(
+                    "SELECT * FROM tb_pessoa order by codigo_pessoa DESC"
+                );
+                const response = {
+                    pessoas: result.rows.map((pessoa: Pessoa) => {
+                        return {
+                            codigoPessoa: pessoa.CODIGO_PESSOA,
+                            nome: pessoa.NOME,
+                            sobrenome: pessoa.SOBRENOME,
+                            idade: pessoa.IDADE,
+                            login: pessoa.LOGIN,
+                            senha: pessoa.SENHA,
+                            status: pessoa.STATUS,
+                            enderecos: [],
+                        };
+                    }),
+                };
+
+                return res.status(200).send(response.pessoas);
+            } catch (error) {
+                console.log(error);
+                return res.status(404).send({
+                    mensagem:
+                        "Não foi possível consultar pesssoa no banco de dados.",
                     status: 404,
                 });
             } finally {

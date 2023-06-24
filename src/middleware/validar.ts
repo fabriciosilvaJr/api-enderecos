@@ -83,7 +83,7 @@ class Validacoes {
                     }
                     if (enderecos) {
                         const contador = enderecos.length;
-                        console.log(contador);
+                        
                         for (let i = 0; i < contador; i++) {
                             if (enderecos[i].codigoBairro == null) {
                                 return res.status(404).send({
@@ -114,12 +114,22 @@ class Validacoes {
                                     status: 404,
                                     nomeDoCampo: "numero",
                                 });
+                            }
+
+                            if (
+                                enderecos[i].cep == null ||
+                                enderecos[i].cep == ""
+                            ) {
+                                return res.status(404).send({
+                                    mensagem:
+                                        "Não foi possível incluir endereço no banco, pois o campo cep é obrigatório",
+                                    status: 404,
+                                    nomeDoCampo: "cep",
+                                });
                             } else {
-                                next();
+                                return next();
                             }
                         }
-                    } else {
-                        next();
                     }
                 }
             } catch (error) {
