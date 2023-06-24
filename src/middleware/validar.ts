@@ -83,7 +83,7 @@ class Validacoes {
                     }
                     if (enderecos) {
                         const contador = enderecos.length;
-                        
+
                         for (let i = 0; i < contador; i++) {
                             if (enderecos[i].codigoBairro == null) {
                                 return res.status(404).send({
@@ -130,6 +130,41 @@ class Validacoes {
                                 return next();
                             }
                         }
+                    }
+                }
+                if (req.method == "GET") {
+                    function ehNumero(valor: any) {
+                        return /^[0-9]+$/.test(valor);
+                    }
+                    if (
+                        req.query.codigoPessoa &&
+                        !ehNumero(req.query.codigoPessoa)
+                    ) {
+                        return res.status(404).send({
+                            mensagem:
+                                "Não foi possível consultar Pessoa no banco de dados, pois o valor do campo codigoPessoa precisa ser um número",
+                            status: 404,
+                        });
+                      
+
+                        }
+                        if(req.query.login== ""){
+                            return res.status(404).send({
+                                mensagem: "Não foi possível enontrar o login informado, pois o campo não foi preenchido.",
+                                status: 404,
+                            });
+                    }  if (
+                        req.query.status &&
+                        !ehNumero(req.query.status)
+                    ) {
+                        return res.status(404).send({
+                            mensagem:
+                                "Não foi possível consultar Pessoa no banco de dados, pois o valor do campo status precisa ser um número inteiro 1 - aitvado ou 2 - desativado",
+                            status: 404,
+                        });
+                    }
+                    else {
+                        next();
                     }
                 }
             } catch (error) {

@@ -9,7 +9,7 @@ const pessoaController = new PessoaController();
 
 pessoaRotas.post('/',validar.validarPessoa ,pessoaController.criacaoPessoa);
 
-pessoaRotas.get('/' ,pessoaController.listarPessoa);
+pessoaRotas.get('/',validar.validarPessoa ,pessoaController.listarPessoa);
 
 
 export default pessoaRotas;

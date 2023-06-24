@@ -130,51 +130,81 @@ class PessoaController {
                          `,
                         [req.query.codigoPessoa]
                     );
-                 
-                    const response = {
-                        codigoPessoa: filtro.rows[0].CODIGO_PESSOA,
-                        nome: filtro.rows[0].NOME,
-                        sobrenome: filtro.rows[0].SOBRENOME,
-                        idade: filtro.rows[0].IDADE,
-                        login: filtro.rows[0].LOGIN,
-                        senha: filtro.rows[0].SENHA,
-                        status: filtro.rows[0].STATUS,
-                        enderecos: filtro.rows.map((pessoa: Pessoa) => {
-                            return {
-                                codigoEndereco: pessoa.CODIGO_ENDERECO,
-                                codigoPessoa: pessoa.CODIGO_PESSOA,
-                                codigoBairro: pessoa.CODIGO_BAIRRO,
-                                nomeRua: pessoa.NOME_RUA,
-                                numero: pessoa.NUMERO,
-                                complemento: pessoa.COMPLEMENTO,
-                                cep: pessoa.CEP,
-                                bairro: {
+
+                    if (filtro.rows.length > 0) {
+                        const response = {
+                            codigoPessoa: filtro.rows[0].CODIGO_PESSOA,
+                            nome: filtro.rows[0].NOME,
+                            sobrenome: filtro.rows[0].SOBRENOME,
+                            idade: filtro.rows[0].IDADE,
+                            login: filtro.rows[0].LOGIN,
+                            senha: filtro.rows[0].SENHA,
+                            status: filtro.rows[0].STATUS,
+                            enderecos: filtro.rows.map((pessoa: Pessoa) => {
+                                return {
+                                    codigoEndereco: pessoa.CODIGO_ENDERECO,
+                                    codigoPessoa: pessoa.CODIGO_PESSOA,
                                     codigoBairro: pessoa.CODIGO_BAIRRO,
-                                    codigoMunicipio: pessoa.CODIGO_MUNICIPIO,
-                                    nome: pessoa.NOME_BAIRRO,
-                                    status: pessoa.STATUS_BAIRRO,
-                                    municipio: {
+                                    nomeRua: pessoa.NOME_RUA,
+                                    numero: pessoa.NUMERO,
+                                    complemento: pessoa.COMPLEMENTO,
+                                    cep: pessoa.CEP,
+                                    bairro: {
+                                        codigoBairro: pessoa.CODIGO_BAIRRO,
                                         codigoMunicipio:
                                             pessoa.CODIGO_MUNICIPIO,
-                                        codigoUF: pessoa.CODIGO_UF,
-                                        nome: pessoa.NOME_MUNICIPIO,
-                                        status: pessoa.STATUS_MUNICIPIO,
-                                        uf: {
+                                        nome: pessoa.NOME_BAIRRO,
+                                        status: pessoa.STATUS_BAIRRO,
+                                        municipio: {
+                                            codigoMunicipio:
+                                                pessoa.CODIGO_MUNICIPIO,
                                             codigoUF: pessoa.CODIGO_UF,
-                                            sigla: pessoa.SIGLA,
-                                            nome: pessoa.NOME_UF,
-                                            status: pessoa.STATUS_UF,
+                                            nome: pessoa.NOME_MUNICIPIO,
+                                            status: pessoa.STATUS_MUNICIPIO,
+                                            uf: {
+                                                codigoUF: pessoa.CODIGO_UF,
+                                                sigla: pessoa.SIGLA,
+                                                nome: pessoa.NOME_UF,
+                                                status: pessoa.STATUS_UF,
+                                            },
                                         },
                                     },
-                                },
+                                };
+                            }),
+                        };
+
+                        return res.status(200).send(response);
+                    } else {
+                        return res.status(200).send([]);
+                    }
+                }
+                if (req.query.login || req.query.status) {
+                    let filtro = await connection.execute(
+                        `SELECT * FROM tb_pessoa WHERE login= :login or status = :statud  `,
+                        [
+                            req.query.login,
+                            req.query.status,
+                        ]
+                    );
+                    const response = {
+                        pessoas: filtro.rows.map((pessoa: Pessoa) => {
+                            return {
+                                codigoPessoa: pessoa.CODIGO_PESSOA,
+                                nome: pessoa.NOME,
+                                sobrenome: pessoa.SOBRENOME,
+                                idade: pessoa.IDADE,
+                                login: pessoa.LOGIN,
+                                senha: pessoa.SENHA,
+                                status: pessoa.STATUS,
+                                enderecos: [],
                             };
                         }),
                     };
+                    return res.status(200).send(response.pessoas);
 
-                    return res.status(200).send(response);
+
                 }
 
-        
                 const result = await connection.execute(
                     "SELECT * FROM tb_pessoa order by codigo_pessoa DESC"
                 );
