@@ -11,5 +11,7 @@ pessoaRotas.post('/',validar.validarPessoa ,pessoaController.criacaoPessoa);
 
 pessoaRotas.get('/',validar.validarPessoa ,pessoaController.listarPessoa);
 
+pessoaRotas.put('/' ,pessoaController.alterarPessoa);
+
 
 export default pessoaRotas;

@@ -1,4 +1,4 @@
-export interface Pessoa {
+export interface Pessoa  {
     CODIGO_PESSOA?: number;
     NOME?: string;
     SOBRENOME?: string;
