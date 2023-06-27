@@ -7,7 +7,7 @@ const pessoaRotas = Router();
 const validar = new Validacoes();
 const pessoaController = new PessoaController();
 
-pessoaRotas.post('/',validar.validarPessoa ,pessoaController.criacaoPessoa);
+pessoaRotas.post('/' ,pessoaController.criacaoPessoa);
 
 pessoaRotas.get('/',validar.validarPessoa ,pessoaController.listarPessoa);
 

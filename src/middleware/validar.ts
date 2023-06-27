@@ -11,6 +11,7 @@ class Validacoes {
         await dbConexao.conexaoComBanco().then(async (connection: any) => {
             try {
                 if (req.method == "POST") {
+                    var validaEndereco = false;
                     if (req.body.nome == null || req.body.nome == "") {
                         return res.status(404).send({
                             mensagem:
@@ -44,6 +45,14 @@ class Validacoes {
                                 "Não foi possível incluir pessoa no banco, pois o campo login é obrigatório",
                             status: 404,
                             nomeDoCampo: "login",
+                        });
+                    }
+                    if (req.body.senha == null || req.body.senha == "") {
+                        return res.status(404).send({
+                            mensagem:
+                                "Não foi possível incluir pessoa no banco, pois o campo senha é obrigatório",
+                            status: 404,
+                            nomeDoCampo: "senha",
                         });
                     }
 
@@ -82,20 +91,20 @@ class Validacoes {
                         });
                     }
                     if (enderecos) {
-                        const contador = enderecos.length;
-
-                        for (let i = 0; i < contador; i++) {
-                            if (enderecos[i].codigoBairro == null) {
-                                return res.status(404).send({
+                     
+                        enderecos.map((endereco: any) => {
+                            if (endereco.codigoBairro == null) {
+                                 return res.status(404).send({
                                     mensagem:
                                         "Não foi possível incluir endereço no banco, pois o campo codigoBairro é obrigatório",
                                     status: 404,
                                     nomeDoCampo: "codigoBairro",
                                 });
+                                
                             }
                             if (
-                                enderecos[i].nomeRua == null ||
-                                enderecos[i].nomeRua == ""
+                                endereco.nomeRua == null ||
+                                endereco.nomeRua == ""
                             ) {
                                 return res.status(404).send({
                                     mensagem:
@@ -105,8 +114,8 @@ class Validacoes {
                                 });
                             }
                             if (
-                                enderecos[i].numero == null ||
-                                enderecos[i].numero == ""
+                                endereco.numero == null ||
+                                endereco.numero == ""
                             ) {
                                 return res.status(404).send({
                                     mensagem:
@@ -115,22 +124,34 @@ class Validacoes {
                                     nomeDoCampo: "numero",
                                 });
                             }
-
                             if (
-                                enderecos[i].cep == null ||
-                                enderecos[i].cep == ""
+                                endereco.complemento == null ||
+                                endereco.complemento == ""
                             ) {
+                                return res.status(404).send({
+                                    mensagem:
+                                        "Não foi possível incluir endereço no banco, pois o campo complemento é obrigatório",
+                                    status: 404,
+                                    nomeDoCampo: "complemento",
+                                });
+                            }
+
+                            if (endereco.cep == null || endereco.cep == "") {
                                 return res.status(404).send({
                                     mensagem:
                                         "Não foi possível incluir endereço no banco, pois o campo cep é obrigatório",
                                     status: 404,
                                     nomeDoCampo: "cep",
                                 });
-                            } else {
+                               
+                            }else{
                                 return next();
-                            }
-                        }
-                    }
+                               
+        
+                           }
+                           
+                        });
+                    } 
                 }
                 if (req.method == "GET") {
                     function ehNumero(valor: any) {
@@ -145,25 +166,21 @@ class Validacoes {
                                 "Não foi possível consultar Pessoa no banco de dados, pois o valor do campo codigoPessoa precisa ser um número",
                             status: 404,
                         });
-                      
-
-                        }
-                        if(req.query.login== ""){
-                            return res.status(404).send({
-                                mensagem: "Não foi possível enontrar o login informado, pois o campo não foi preenchido.",
-                                status: 404,
-                            });
-                    }  if (
-                        req.query.status &&
-                        !ehNumero(req.query.status)
-                    ) {
+                    }
+                    if (req.query.login == "") {
+                        return res.status(404).send({
+                            mensagem:
+                                "Não foi possível enontrar o login informado, pois o campo não foi preenchido.",
+                            status: 404,
+                        });
+                    }
+                    if (req.query.status && !ehNumero(req.query.status)) {
                         return res.status(404).send({
                             mensagem:
                                 "Não foi possível consultar Pessoa no banco de dados, pois o valor do campo status precisa ser um número inteiro 1 - aitvado ou 2 - desativado",
                             status: 404,
                         });
-                    }
-                    else {
+                    } else {
                         next();
                     }
                 }

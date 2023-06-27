@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import rotas from './routes'
 import AppErro from './errors/AppErro';
+import 'express-async-errors';
 
 
 
