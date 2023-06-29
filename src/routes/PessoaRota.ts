@@ -7,11 +7,11 @@ const pessoaRotas = Router();
 const validar = new Validacoes();
 const pessoaController = new PessoaController();
 
-pessoaRotas.post('/' ,pessoaController.criacaoPessoa);
+pessoaRotas.post('/', validar.validarPessoa ,pessoaController.criacaoPessoa);
 
 pessoaRotas.get('/',validar.validarPessoa ,pessoaController.listarPessoa);
 
-pessoaRotas.put('/' ,pessoaController.alterarPessoa);
+pessoaRotas.put('/',validar.validarPessoa ,pessoaController.alterarPessoa);
 
 
 export default pessoaRotas;

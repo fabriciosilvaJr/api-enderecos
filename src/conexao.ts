@@ -1,5 +1,5 @@
 import oracledb, { Connection } from 'oracledb';
-// oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+ oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.autoCommit = false;
 
 

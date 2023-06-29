@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import db from "./../database";
-const dbConexao = new db();
+import Conexao from "../conexao";
 
 class Validacoes {
     public validarPessoa = async (
@@ -8,73 +7,43 @@ class Validacoes {
         res: Response,
         next: NextFunction
     ) => {
-        await dbConexao.conexaoComBanco().then(async (connection: any) => {
+     
             try {
+                let conexao = await Conexao.abrirConexao();
+                var erros:any = [];
                 if (req.method == "POST") {
-                    var validaEndereco = false;
                     if (req.body.nome == null || req.body.nome == "") {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois o campo nome é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "nome",
-                        });
+                        erros.push(" campo nome é obrigatório");
                     }
                     if (
                         req.body.sobrenome == null ||
                         req.body.sobrenome == ""
                     ) {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois o campo sobrenome é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "sobrenome",
-                        });
+                        erros.push("campo sobrenome é obrigatório");
+        
                     }
                     if (req.body.idade == null) {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois o campo idade é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "idade",
-                        });
+                        erros.push("campo idade é obrigatório");
                     }
                     if (req.body.login == null || req.body.login == "") {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois o campo login é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "login",
-                        });
+                        erros.push("campo login é obrigatório");
                     }
                     if (req.body.senha == null || req.body.senha == "") {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois o campo senha é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "senha",
-                        });
+                        erros.push("campo senha é obrigatório");
                     }
 
-                    const resultLogin = await connection.execute(
+                    const resultLogin = await conexao.execute(
                         `select * from tb_pessoa WHERE login = :login`,
                         [req.body.login]
                     );
 
                     if (resultLogin.rows.length > 0) {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pessoa no banco, pois esse login já está sendo usado",
-                            status: 404,
-                        });
+                        erros.push("login já está sendo usado");
+
                     }
                     if (req.body.status == null) {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pesssoa no banco, pois o campo status é obrigatório",
-                            status: 404,
-                            nomeDoCampo: "status",
-                        });
+                        erros.push("campo status é obrigatório");
+
                     }
 
                     const { enderecos } = req.body;
@@ -83,75 +52,163 @@ class Validacoes {
                         typeof enderecos == "undefined" ||
                         enderecos.length == 0
                     ) {
-                        return res.status(404).send({
-                            mensagem:
-                                "Não foi possível incluir pesssoa no banco, pois é necessario cadastrar pelo menos um endereço",
-                            status: 404,
-                            nomeDoCampo: "enderecos",
-                        });
+                        erros.push("Cadastre ao menos um endereço");
                     }
-                    if (enderecos) {
+        
                      
                         enderecos.map((endereco: any) => {
                             if (endereco.codigoBairro == null) {
-                                 return res.status(404).send({
-                                    mensagem:
-                                        "Não foi possível incluir endereço no banco, pois o campo codigoBairro é obrigatório",
-                                    status: 404,
-                                    nomeDoCampo: "codigoBairro",
-                                });
+                                erros.push("campo codigoBairro é obrigatório");
                                 
                             }
                             if (
                                 endereco.nomeRua == null ||
                                 endereco.nomeRua == ""
                             ) {
-                                return res.status(404).send({
-                                    mensagem:
-                                        "Não foi possível incluir endereço no banco, pois o campo nomeRua é obrigatório",
-                                    status: 404,
-                                    nomeDoCampo: "nomeRua",
-                                });
+                                erros.push("campo nomeRua é obrigatório");
                             }
                             if (
                                 endereco.numero == null ||
                                 endereco.numero == ""
                             ) {
-                                return res.status(404).send({
-                                    mensagem:
-                                        "Não foi possível incluir endereço no banco, pois o campo número é obrigatório",
-                                    status: 404,
-                                    nomeDoCampo: "numero",
-                                });
+                                erros.push("campo número é obrigatório");
                             }
                             if (
                                 endereco.complemento == null ||
                                 endereco.complemento == ""
                             ) {
-                                return res.status(404).send({
-                                    mensagem:
-                                        "Não foi possível incluir endereço no banco, pois o campo complemento é obrigatório",
-                                    status: 404,
-                                    nomeDoCampo: "complemento",
-                                });
+                                erros.push("campo complemento é obrigatório");
+                            }
+                            if(endereco.complemento.length > 20){
+                                erros.push("O complemento está muito grande");
+
                             }
 
                             if (endereco.cep == null || endereco.cep == "") {
-                                return res.status(404).send({
-                                    mensagem:
-                                        "Não foi possível incluir endereço no banco, pois o campo cep é obrigatório",
-                                    status: 404,
-                                    nomeDoCampo: "cep",
-                                });
+                                erros.push("campo cep é obrigatório");
+                                
                                
-                            }else{
-                                return next();
-                               
-        
-                           }
+                            }
+                          
                            
+
                         });
-                    } 
+  
+                      
+                        if(erros.length > 0){
+                            return res.status(404).json({mensagem: erros, status: 404} )
+
+                        }
+                        else if(erros.length == 0){
+                            return  next();
+
+                        }
+                     
+                    
+                }
+                if (req.method == "PUT") {
+                    if (req.body.codigoPessoa == null) {
+                        erros.push("campo codigoPessoa é obrigatório");
+                        
+                    }
+                    if (req.body.nome == null || req.body.nome == "") {
+                        erros.push(" campo nome é obrigatório");
+                    }
+                    if (
+                        req.body.sobrenome == null ||
+                        req.body.sobrenome == ""
+                    ) {
+                        erros.push("campo sobrenome é obrigatório");
+        
+                    }
+                    if (req.body.idade == null) {
+                        erros.push("campo idade é obrigatório");
+                    }
+                    if (req.body.login == null || req.body.login == "") {
+                        erros.push("campo login é obrigatório");
+                    }
+                    if (req.body.senha == null || req.body.senha == "") {
+                        erros.push("campo senha é obrigatório");
+                    }
+
+                    const resultLogin = await conexao.execute(
+                        `select * from tb_pessoa WHERE login = :login`,
+                        [req.body.login]
+                    );
+           
+               
+                    if ((resultLogin.rows.length > 0 ) && (resultLogin.rows[0].LOGIN != req.body.login)
+                       ) {
+                        erros.push("login já está sendo usado");
+
+                    }
+                    if (req.body.status == null) {
+                        erros.push("campo status é obrigatório");
+
+                    }
+
+                    const { enderecos } = req.body;
+
+                    if (
+                        typeof enderecos == "undefined" ||
+                        enderecos.length == 0
+                    ) {
+                        erros.push("Cadastre ao menos um endereço");
+                    }
+        
+                     
+                        enderecos.map((endereco: any) => {
+                            if (endereco.codigoBairro == null) {
+                                erros.push("campo codigoBairro é obrigatório");
+                                
+                            }
+                            if (endereco.codigoPessoa == null) {
+                                erros.push("campo codigoPessoa em endereços é obrigatório");
+                                
+                            }
+                            if (
+                                endereco.nomeRua == null ||
+                                endereco.nomeRua == ""
+                            ) {
+                                erros.push("campo nomeRua é obrigatório");
+                            }
+                            if (
+                                endereco.numero == null ||
+                                endereco.numero == ""
+                            ) {
+                                erros.push("campo número é obrigatório");
+                            }
+                            if (
+                                endereco.complemento == null ||
+                                endereco.complemento == ""
+                            ) {
+                                erros.push("campo complemento é obrigatório");
+                            }
+                            if(endereco.complemento && endereco.complemento.length > 20){
+                                erros.push("O complemento está muito grande");
+
+                            }
+
+                            if (endereco.cep == null || endereco.cep == "") {
+                                erros.push("campo cep é obrigatório");
+                                
+                               
+                            }
+                          
+                           
+
+                        });
+  
+                      
+                        if(erros.length > 0){
+                            return res.status(404).json({mensagem: erros, status: 404} )
+
+                        }
+                        else if(erros.length == 0){
+                            return  next();
+
+                        }
+
                 }
                 if (req.method == "GET") {
                     function ehNumero(valor: any) {
@@ -187,7 +244,7 @@ class Validacoes {
             } catch (error) {
                 console.log(error);
             }
-        });
+      
     };
 }
 
