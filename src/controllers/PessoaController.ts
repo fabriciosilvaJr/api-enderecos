@@ -76,11 +76,15 @@ class PessoaController {
             } = req.body;
 
             const query = `UPDATE tb_pessoa set nome = :nome, sobrenome= :sobrenome, idade = :idade, login = :login, senha= :senha, status= :status WHERE codigo_pessoa = :codigoPessoa `;
-            const result = await conexao.execute(
-                query,
-                [nome, sobrenome, idade, login, senha, status, codigoPessoa]
-              
-            );
+            const result = await conexao.execute(query, [
+                nome,
+                sobrenome,
+                idade,
+                login,
+                senha,
+                status,
+                codigoPessoa,
+            ]);
             const contador = enderecos.length;
 
             let EnderecoByPessoaID = await conexao.execute(
@@ -126,7 +130,6 @@ class PessoaController {
                     conexao.execute(
                         ` delete from tb_endereco WHERE codigo_endereco = :codigoEndereco`,
                         [u.codigoEndereco]
-                       
                     );
                 });
             }
@@ -174,6 +177,48 @@ class PessoaController {
                 mensagem: "Não foi possível alterar pessoa no banco de dados.",
                 status: 404,
             });
+        } finally {
+            await Conexao.fecharConexao();
+        }
+    };
+
+    public deletarPessoa = async (req: Request, res: Response) => {
+        try {
+            let conexao = await Conexao.abrirConexao();
+            const { codigoPessoa } = req.params;
+            console.log(codigoPessoa)
+            let queryEndereco =
+                "DELETE FROM TB_ENDERECO WHERE CODIGO_PESSOA = :codigoPessoa";
+            let resultEndereco = await conexao.execute(queryEndereco, [
+                codigoPessoa,
+            ]);
+            console.log(
+                "FORAM DELETADOS" +
+                    resultEndereco.rowsAffected +
+                    " ENDEREÇOS NO BANCO DE DADOS"
+            );
+        if(resultEndereco.rowsAffected >= 1){
+            let queryPessoa =
+            "DELETE FROM tb_pessoa WHERE CODIGO_PESSOA = :codigoPessoa";
+         await conexao.execute(queryPessoa, [
+            codigoPessoa,
+        ]);
+
+        }
+
+          
+            await Conexao.commit();
+            await this.listarPessoa(req, res);
+        } catch (error) {
+            console.log(error);
+            await Conexao.rollback();
+            return res
+                .status(404)
+                .send({
+                    status: 404,
+                    mensagem:
+                        "Não foi possível excluir uma Pessoa no banco de dados.",
+                });
         } finally {
             await Conexao.fecharConexao();
         }

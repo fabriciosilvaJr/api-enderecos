@@ -13,5 +13,7 @@ pessoaRotas.get('/',validar.validarPessoa ,pessoaController.listarPessoa);
 
 pessoaRotas.put('/',validar.validarPessoa ,pessoaController.alterarPessoa);
 
+pessoaRotas.delete('/:codigoPessoa', pessoaController.deletarPessoa);
+
 
 export default pessoaRotas;
