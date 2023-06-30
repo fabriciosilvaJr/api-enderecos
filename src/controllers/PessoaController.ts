@@ -186,39 +186,46 @@ class PessoaController {
         try {
             let conexao = await Conexao.abrirConexao();
             const { codigoPessoa } = req.params;
-            console.log(codigoPessoa)
-            let queryEndereco =
-                "DELETE FROM TB_ENDERECO WHERE CODIGO_PESSOA = :codigoPessoa";
-            let resultEndereco = await conexao.execute(queryEndereco, [
-                codigoPessoa,
-            ]);
-            console.log(
-                "FORAM DELETADOS" +
-                    resultEndereco.rowsAffected +
-                    " ENDEREÇOS NO BANCO DE DADOS"
+
+            let verificaPessoa = await conexao.execute(
+                "select * from tb_pessoa where codigo_pessoa = :codigoPessoa",
+                [codigoPessoa]
             );
-        if(resultEndereco.rowsAffected >= 1){
-            let queryPessoa =
-            "DELETE FROM tb_pessoa WHERE CODIGO_PESSOA = :codigoPessoa";
-         await conexao.execute(queryPessoa, [
-            codigoPessoa,
-        ]);
+            console.log(verificaPessoa.rows.length);
+            if (verificaPessoa.rows.length > 0) {
+                let queryEndereco =
+                    "DELETE FROM TB_ENDERECO WHERE CODIGO_PESSOA = :codigoPessoa";
+                let resultEndereco = await conexao.execute(queryEndereco, [
+                    codigoPessoa,
+                ]);
+                console.log(
+                    "FORAM DELETADOS" +
+                        resultEndereco.rowsAffected +
+                        " ENDEREÇOS NO BANCO DE DADOS"
+                );
+                if (resultEndereco.rowsAffected >= 1) {
+                    let queryPessoa =
+                        "DELETE FROM tb_pessoa WHERE CODIGO_PESSOA = :codigoPessoa";
+                    await conexao.execute(queryPessoa, [codigoPessoa]);
+                }
 
-        }
-
-          
-            await Conexao.commit();
-            await this.listarPessoa(req, res);
+                await Conexao.commit();
+                await this.listarPessoa(req, res);
+            } else {
+                return res.status(404).send({
+                    status: 404,
+                    mensagem:
+                        "Não foi possível encontrar uma pessoa com o código informado.",
+                });
+            }
         } catch (error) {
             console.log(error);
             await Conexao.rollback();
-            return res
-                .status(404)
-                .send({
-                    status: 404,
-                    mensagem:
-                        "Não foi possível excluir uma Pessoa no banco de dados.",
-                });
+            return res.status(404).send({
+                status: 404,
+                mensagem:
+                    "Não foi possível excluir uma Pessoa no banco de dados.",
+            });
         } finally {
             await Conexao.fecharConexao();
         }

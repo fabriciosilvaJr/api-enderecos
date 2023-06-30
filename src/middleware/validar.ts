@@ -96,7 +96,7 @@ class Validacoes {
   
                       
                         if(erros.length > 0){
-                            return res.status(404).json({mensagem: erros, status: 404} )
+                            return res.status(404).json({mensagem: erros.join(", "), status: 404} )
 
                         }
                         else if(erros.length == 0){
@@ -201,7 +201,7 @@ class Validacoes {
   
                       
                         if(erros.length > 0){
-                            return res.status(404).json({mensagem: erros, status: 404} )
+                            return res.status(404).json({mensagem: erros.join(", "), status: 404} )
 
                         }
                         else if(erros.length == 0){

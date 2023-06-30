@@ -182,6 +182,44 @@ class UfController {
             await Conexao.fecharConexao();
         }
     };
+    public deletarUF = async (req: Request, res: Response) => {
+        try {
+            let conexao = await Conexao.abrirConexao();
+            const { codigoUF } = req.params;
+
+            let verificaUF = await conexao.execute(
+                "select * from tb_uf where codigo_uf = :codigoUF",
+                [codigoUF]
+            );
+            if (verificaUF.rows.length > 0) {
+                const query = `UPDATE tb_uf set status = 2 WHERE codigo_uf = :codigoUF`;
+                const result = await conexao.execute(query, [codigoUF]);
+                console.log(
+                    "FORAM DELETADOS" +
+                        result.rowsAffected +
+                        " NO BANCO DE DADOS"
+                );
+
+                await Conexao.commit();
+                await this.listarUF(req, res);
+            } else {
+                return res.status(404).send({
+                    status: 404,
+                    mensagem:
+                        "Não foi possível encontrar uma uf com o código informado.",
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            await Conexao.rollback();
+            return res.status(404).send({
+                status: 404,
+                mensagem: "Não foi possível desativar a UF no banco de dados.",
+            });
+        } finally {
+            await Conexao.fecharConexao();
+        }
+    };
 
     public listarUF = async (req: Request, res: Response) => {
         try {
