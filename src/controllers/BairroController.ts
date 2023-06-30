@@ -151,6 +151,46 @@ class BairroController {
         }
     };
 
+    public deletarBairro = async (req: Request, res: Response) => {
+        try {
+            let conexao = await Conexao.abrirConexao();
+            const { codigoBairro } = req.params;
+
+            let verificaBairro = await conexao.execute(
+                "select * from tb_bairro where codigo_bairro = :codigoBairro",
+                [codigoBairro]
+            );
+            if (verificaBairro.rows.length > 0) {
+                const query = `UPDATE tb_bairro set status = 2 WHERE codigo_bairro = :codigoBairro`;
+                const result = await conexao.execute(query, [codigoBairro]);
+                console.log(
+                    "FORAM DELETADOS" +
+                        result.rowsAffected +
+                        " NO BANCO DE DADOS"
+                );
+
+                await Conexao.commit();
+                await this.listarBairro(req, res);
+            } else {
+                return res.status(404).send({
+                    status: 404,
+                    mensagem:
+                        "Não foi possível encontrar um bairro com o código informado.",
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            await Conexao.rollback();
+            return res.status(404).send({
+                status: 404,
+                mensagem: "Não foi possível desativar o bairro no banco de dados.",
+            });
+        } finally {
+            await Conexao.fecharConexao();
+        }
+    };
+
+
     public listarBairro = async (req: Request, res: Response) => {
         try {
             let conexao = await Conexao.abrirConexao();
