@@ -138,6 +138,45 @@ class MunicipioController {
             await Conexao.fecharConexao();
         }
     };
+    public deletarMunicipio = async (req: Request, res: Response) => {
+        try {
+            let conexao = await Conexao.abrirConexao();
+            const { codigoMunicipio } = req.params;
+
+            let verificaMunicipio = await conexao.execute(
+                "select * from tb_municipio where codigo_municipio = :codigoMunicipio",
+                [codigoMunicipio]
+            );
+            if (verificaMunicipio.rows.length > 0) {
+                const query = `UPDATE tb_municipio set status = 2 WHERE codigo_municipio = :codigoMunicipio`;
+                const result = await conexao.execute(query, [codigoMunicipio]);
+                console.log(
+                    "FORAM DELETADOS" +
+                        result.rowsAffected +
+                        " NO BANCO DE DADOS"
+                );
+
+                await Conexao.commit();
+                await this.listarMunicipio(req, res);
+            } else {
+                return res.status(404).send({
+                    status: 404,
+                    mensagem:
+                        "Não foi possível encontrar um municipio com o código informado.",
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            await Conexao.rollback();
+            return res.status(404).send({
+                status: 404,
+                mensagem: "Não foi possível desativar o municipio no banco de dados.",
+            });
+        } finally {
+            await Conexao.fecharConexao();
+        }
+    };
+
 
     public listarMunicipio = async (req: Request, res: Response) => {
         try {
