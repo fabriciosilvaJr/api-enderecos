@@ -236,52 +236,7 @@ class UfController {
                     status: 404,
                 });
             }
-            // if (req.query.codigoUF) {
-            //     let filtro = await conexao.execute(
-            //         `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF `,
-            //         [req.query.codigoUF]
-            //     );
-            //     const response = {
-            //         ufs: filtro.rows.map((uf: Uf) => {
-            //             return {
-            //                 codigoUF: uf.CODIGO_UF,
-            //                 sigla: uf.SIGLA,
-            //                 nome: uf.NOME,
-            //                 status: uf.STATUS,
-            //             };
-            //         }),
-            //     };
-
-            //     return res.status(200).send(response.ufs);
-            // }
-            // if (
-            //     req.query.codigoUF ||
-            //     req.query.sigla ||
-            //     req.query.nome ||
-            //     req.query.status
-            // ) {
-            //     let filtro = await conexao.execute(
-            //         `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF or  sigla LIKE :sigla collate binary_ci  or nome LIKE :nome collate binary_ci or status LIKE :status   `,
-            //         [
-            //             req.query.codigoUF,
-            //             req.query.sigla,
-            //             "%" + req.query.nome + "%",
-            //             req.query.status,
-            //         ]
-            //     );
-            //     const response = {
-            //         ufs: filtro.rows.map((uf: Uf) => {
-            //             return {
-            //                 codigoUF: uf.CODIGO_UF,
-            //                 sigla: uf.SIGLA,
-            //                 nome: uf.NOME,
-            //                 status: uf.STATUS,
-            //             };
-            //         }),
-            //     };
-
-            //     return res.status(200).send(response.ufs);
-            // }
+            
             let recursos : any[] = this.gerarSQLConsultarListar(uf);
             let sql = recursos[0]; //sql
             let parametros : any[] = recursos[1]; //parametros
@@ -318,7 +273,7 @@ class UfController {
         if(uf.codigoUF != null || uf.codigoUF != undefined)
         {
             sql += ' AND CODIGO_UF = :codigoUF ';
-            parametros = [...parametros, uf.codigoUF]; //outra forma de adicionar um elemento dentro de um array (não é muito usual, mas é possível)
+            parametros = [...parametros, uf.codigoUF]; 
         }
         if(uf.sigla != null || uf.sigla != undefined)
         {

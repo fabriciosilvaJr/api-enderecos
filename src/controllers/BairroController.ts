@@ -194,12 +194,13 @@ class BairroController {
     public listarBairro = async (req: Request, res: Response) => {
         try {
             let conexao = await Conexao.abrirConexao();
+            const bairro = req.query;
             function ehNumero(valor: any) {
                 return /^[0-9]+$/.test(valor);
             }
 
             //validação
-            if (req.query.codigoBairro && !ehNumero(req.query.codigoBairro)) {
+            if (bairro.codigoBairro && !ehNumero(bairro.codigoBairro)) {
                 return res.status(404).send({
                     mensagem:
                         "Não foi possível consultar Bairro no banco de dados, pois o valor do campo codigoBairro precisa ser um número",
@@ -208,8 +209,8 @@ class BairroController {
             }
 
             if (
-                req.query.codigoMunicipio &&
-                !ehNumero(req.query.codigoMunicipio)
+                bairro.codigoMunicipio &&
+                !ehNumero(bairro.codigoMunicipio)
             ) {
                 return res.status(404).send({
                     mensagem:
@@ -218,37 +219,15 @@ class BairroController {
                 });
             }
 
-            if (
-                req.query.codigoMunicipio ||
-                req.query.codigoBairro ||
-                req.query.nome ||
-                req.query.status
-            ) {
-                let filtro = await conexao.execute(
-                    `SELECT * FROM tb_bairro WHERE codigo_bairro= :codigoBairro or codigo_municipio = :codigoMunicipio  or nome LIKE :nome collate binary_ci or status LIKE :status `,
-                    [
-                        req.query.codigoBairro,
-                        req.query.codigoMunicipio,
-                        "%" + req.query.nome + "%",
-                        req.query.status,
-                    ]
-                );
-                const response = {
-                    bairros: filtro.rows.map((bairro: Bairro) => {
-                        return {
-                            codigoBairro: bairro.CODIGO_BAIRRO,
-                            codigoMunicipio: bairro.CODIGO_MUNICIPIO,
-                            nome: bairro.NOME,
-                            status: bairro.STATUS,
-                        };
-                    }),
-                };
-
-                return res.status(200).send(response.bairros);
-            }
+           
+        
+            
+            let recursos : any[] = this.gerarSQLConsultarListar(bairro);
+            let sql = recursos[0]; //sql
+            let parametros : any[] = recursos[1]; //parametros
 
             const result = await conexao.execute(
-                "SELECT * FROM tb_bairro order by codigo_bairro DESC"
+                sql, parametros
             );
             const response = {
                 bairros: result.rows.map((bairro: Bairro) => {
@@ -272,6 +251,34 @@ class BairroController {
             await Conexao.fecharConexao();
         }
     };
+
+    private gerarSQLConsultarListar(bairro : any) : any []
+    {
+        let parametros : any[] = [];
+        let sql = 'SELECT CODIGO_BAIRRO, CODIGO_MUNICIPIO, NOME, STATUS FROM TB_BAIRRO WHERE 1 = 1 ';
+        if(bairro.codigoBairro != null || bairro.codigoUF != undefined)
+        {
+            sql += ' AND CODIGO_BAIRRO = :codigoBairro ';
+            parametros = [...parametros, bairro.codigoBairro]; 
+        }
+        if(bairro.codigoMunicipio != null || bairro.codigoMunicipio != undefined)
+        {
+            sql += ' AND CODIGO_MUNICIPIO = :codigoMunicipio  ';
+            parametros = [...parametros, bairro.codigoMunicipio];
+        }
+        if(bairro.nome != null || bairro.nome != undefined )
+        {
+            sql += ' AND NOME = :nome collate binary_ci ';
+            parametros = [...parametros, bairro.nome];
+        }
+        if(bairro.status != null || undefined)
+        {
+            sql += ' AND STATUS = :status ';
+            parametros = [...parametros, bairro.status];
+        }
+        sql += " ORDER BY CODIGO_BAIRRO DESC ";
+        return [sql, parametros];   
+    }
 }
 
 export default BairroController;
