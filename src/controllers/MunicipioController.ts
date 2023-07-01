@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Conexao from "../conexao";
+import Conexao from "../Conexao";
 import Municipio from "./../models/municipio";
 
 class MunicipioController {

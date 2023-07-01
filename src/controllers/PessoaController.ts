@@ -2,7 +2,7 @@ import { connect } from "http2";
 import { Bairro } from "./../models/bairro";
 import { Request, Response } from "express";
 import Pessoa from "./../models/pessoa";
-import Conexao from "../conexao";
+import Conexao from "../Conexao";
 
 class PessoaController {
     public criacaoPessoa = async (req: Request, res: Response) => {

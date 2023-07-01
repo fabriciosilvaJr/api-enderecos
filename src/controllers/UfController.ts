@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Uf from "./../models/uf";
-import Conexao from "../conexao";
+import Conexao from "../Conexao";
 
 class UfController {
     public criacaoUF = async (req: Request, res: Response) => {
@@ -224,55 +224,70 @@ class UfController {
     public listarUF = async (req: Request, res: Response) => {
         try {
             let conexao = await Conexao.abrirConexao();
-            if (req.query.codigoUF) {
-                let filtro = await conexao.execute(
-                    `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF `,
-                    [req.query.codigoUF]
-                );
-                const response = {
-                    ufs: filtro.rows.map((uf: Uf) => {
-                        return {
-                            codigoUF: uf.CODIGO_UF,
-                            sigla: uf.SIGLA,
-                            nome: uf.NOME,
-                            status: uf.STATUS,
-                        };
-                    }),
-                };
-
-                return res.status(200).send(response.ufs);
+            const uf = req.query;
+            function ehNumero(valor: any) {
+                return /^[0-9]+$/.test(valor);
             }
-            if (
-                req.query.codigoUF ||
-                req.query.sigla ||
-                req.query.nome ||
-                req.query.status
-            ) {
-                let filtro = await conexao.execute(
-                    `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF or  sigla LIKE :sigla collate binary_ci  or nome LIKE :nome collate binary_ci or status LIKE :status   `,
-                    [
-                        req.query.codigoUF,
-                        req.query.sigla,
-                        "%" + req.query.nome + "%",
-                        req.query.status,
-                    ]
-                );
-                const response = {
-                    ufs: filtro.rows.map((uf: Uf) => {
-                        return {
-                            codigoUF: uf.CODIGO_UF,
-                            sigla: uf.SIGLA,
-                            nome: uf.NOME,
-                            status: uf.STATUS,
-                        };
-                    }),
-                };
 
-                return res.status(200).send(response.ufs);
+            if (uf.codigoUF && !ehNumero(uf.codigoUF)) {
+                return res.status(404).send({
+                    mensagem:
+                        "Não foi possível consultar uf no banco de dados, pois o valor do campo codigoBairro precisa ser um número",
+                    status: 404,
+                });
             }
+            // if (req.query.codigoUF) {
+            //     let filtro = await conexao.execute(
+            //         `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF `,
+            //         [req.query.codigoUF]
+            //     );
+            //     const response = {
+            //         ufs: filtro.rows.map((uf: Uf) => {
+            //             return {
+            //                 codigoUF: uf.CODIGO_UF,
+            //                 sigla: uf.SIGLA,
+            //                 nome: uf.NOME,
+            //                 status: uf.STATUS,
+            //             };
+            //         }),
+            //     };
+
+            //     return res.status(200).send(response.ufs);
+            // }
+            // if (
+            //     req.query.codigoUF ||
+            //     req.query.sigla ||
+            //     req.query.nome ||
+            //     req.query.status
+            // ) {
+            //     let filtro = await conexao.execute(
+            //         `SELECT * FROM tb_uf WHERE codigo_uf= :codigoUF or  sigla LIKE :sigla collate binary_ci  or nome LIKE :nome collate binary_ci or status LIKE :status   `,
+            //         [
+            //             req.query.codigoUF,
+            //             req.query.sigla,
+            //             "%" + req.query.nome + "%",
+            //             req.query.status,
+            //         ]
+            //     );
+            //     const response = {
+            //         ufs: filtro.rows.map((uf: Uf) => {
+            //             return {
+            //                 codigoUF: uf.CODIGO_UF,
+            //                 sigla: uf.SIGLA,
+            //                 nome: uf.NOME,
+            //                 status: uf.STATUS,
+            //             };
+            //         }),
+            //     };
+
+            //     return res.status(200).send(response.ufs);
+            // }
+            let recursos : any[] = this.gerarSQLConsultarListar(uf);
+            let sql = recursos[0]; //sql
+            let parametros : any[] = recursos[1]; //parametros
 
             const result = await conexao.execute(
-                "SELECT * FROM tb_uf order by codigo_uf DESC"
+                sql, parametros
             );
             const response = {
                 ufs: result.rows.map((uf: Uf) => {
@@ -296,6 +311,35 @@ class UfController {
             await Conexao.fecharConexao();
         }
     };
+    private gerarSQLConsultarListar(uf : any) : any []
+    {
+        let parametros : any[] = [];
+        let sql = 'SELECT CODIGO_UF, SIGLA, NOME, STATUS FROM TB_UF WHERE 1 = 1 ';
+        if(uf.codigoUF != null || uf.codigoUF != undefined)
+        {
+            sql += ' AND CODIGO_UF = :codigoUF ';
+            parametros = [...parametros, uf.codigoUF]; //outra forma de adicionar um elemento dentro de um array (não é muito usual, mas é possível)
+        }
+        if(uf.sigla != null || uf.sigla != undefined)
+        {
+            sql += ' AND SIGLA = :sigla collate binary_ci ';
+            parametros = [...parametros, uf.sigla];
+        }
+        if(uf.nome != null || uf.nome != undefined )
+        {
+            sql += ' AND NOME = :nome collate binary_ci ';
+            parametros = [...parametros, uf.nome];
+        }
+        if(uf.status != null || undefined)
+        {
+            sql += ' AND STATUS = :status ';
+            parametros = [...parametros, uf.status];
+        }
+        sql += " ORDER BY CODIGO_UF DESC ";
+        return [sql, parametros];   
+    }
+
+
 }
 
 export default UfController;

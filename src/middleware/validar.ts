@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import Conexao from "../conexao";
+import Conexao from "../Conexao";
 
 class Validacoes {
     public validarPessoa = async (
