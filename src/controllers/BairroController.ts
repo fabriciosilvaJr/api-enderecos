@@ -194,7 +194,7 @@ class BairroController {
     public listarBairro = async (req: Request, res: Response) => {
         try {
             let conexao = await Conexao.abrirConexao();
-            const bairro = req.query;
+            let bairro = req.query;
             function ehNumero(valor: any) {
                 return /^[0-9]+$/.test(valor);
             }
@@ -256,7 +256,7 @@ class BairroController {
     {
         let parametros : any[] = [];
         let sql = 'SELECT CODIGO_BAIRRO, CODIGO_MUNICIPIO, NOME, STATUS FROM TB_BAIRRO WHERE 1 = 1 ';
-        if(bairro.codigoBairro != null || bairro.codigoUF != undefined)
+        if(bairro.codigoBairro != null || bairro.codigoBairro != undefined)
         {
             sql += ' AND CODIGO_BAIRRO = :codigoBairro ';
             parametros = [...parametros, bairro.codigoBairro]; 

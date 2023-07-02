@@ -181,14 +181,15 @@ class MunicipioController {
     public listarMunicipio = async (req: Request, res: Response) => {
         try {
             let conexao = await Conexao.abrirConexao();
+            let municipio= req.query;
             function ehNumero(valor: any) {
                 return /^[0-9]+$/.test(valor);
             }
 
             //validação
             if (
-                req.query.codigoMunicipio &&
-                !ehNumero(req.query.codigoMunicipio)
+                municipio.codigoMunicipio &&
+                !ehNumero(municipio.codigoMunicipio)
             ) {
                 return res.status(404).send({
                     mensagem:
@@ -197,37 +198,13 @@ class MunicipioController {
                 });
             }
 
-            if (
-                req.query.codigoMunicipio ||
-                req.query.codigoUF ||
-                req.query.nome ||
-                req.query.status
-            ) {
-                let filtro = await conexao.execute(
-                    `SELECT * FROM tb_municipio WHERE codigo_municipio= :codigoMunicipio or codigo_uf = :codigoUF  or nome LIKE :nome collate binary_ci or status LIKE :status `,
-                    [
-                        req.query.codigoMunicipio,
-                        req.query.codigoUF,
-                        "%" + req.query.nome + "%",
-                        req.query.status,
-                    ]
-                );
-                const response = {
-                    municipios: filtro.rows.map((municipio: Municipio) => {
-                        return {
-                            codigoMunicipio: municipio.CODIGO_MUNICIPIO,
-                            codigoUF: municipio.CODIGO_UF,
-                            nome: municipio.NOME,
-                            status: municipio.STATUS,
-                        };
-                    }),
-                };
-
-                return res.status(200).send(response.municipios);
-            }
+            let recursos : any[] = this.gerarSQLConsultarListar(municipio);
+            let sql = recursos[0]; //sql
+            console.log(sql)
+            let parametros : any[] = recursos[1]; //parametros
 
             const result = await conexao.execute(
-                "SELECT * FROM tb_municipio order by codigo_municipio DESC"
+                sql, parametros
             );
             const response = {
                 municipios: result.rows.map((municipio: Municipio) => {
@@ -251,6 +228,34 @@ class MunicipioController {
             await Conexao.fecharConexao();
         }
     };
+    private gerarSQLConsultarListar(municipio : any) : any []
+    {
+        let parametros : any[] = [];
+        let sql = 'SELECT  CODIGO_MUNICIPIO, CODIGO_UF, NOME, STATUS FROM TB_MUNICIPIO WHERE 1 = 1 ';
+     
+        if(municipio.codigoMunicipio != null || municipio.codigoMunicipio != undefined)
+        {
+            sql += ' AND CODIGO_MUNICIPIO = :codigoMunicipio  ';
+            parametros = [...parametros, municipio.codigoMunicipio];
+        }
+        if(municipio.codigoUF != null || municipio.codigoUF != undefined)
+        {
+            sql += ' AND CODIGO_UF = :codigoUF ';
+            parametros = [...parametros, municipio.codigoUF]; 
+        }
+        if(municipio.nome != null || municipio.nome != undefined )
+        {
+            sql += ' AND NOME = :nome collate binary_ci ';
+            parametros = [...parametros, municipio.nome];
+        }
+        if(municipio.status != null || undefined)
+        {
+            sql += ' AND STATUS = :status ';
+            parametros = [...parametros, municipio.status];
+        }
+        sql += " ORDER BY CODIGO_MUNICIPIO DESC ";
+        return [sql, parametros];   
+    }
 }
 
 export default MunicipioController;
